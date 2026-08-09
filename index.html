@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Ashův Pokédex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --red: #e3350d;
+    --red-deep: #ad2408;
+    --screen: #16233d;
+    --screen-deep: #0e1730;
+    --cream: #f6ecd9;
+    --ink: #16233d;
+
+    --fire: #e0392f;
+    --water: #3b82c4;
+    --electric: #f2c94c;
+    --grass: #4caf6d;
+    --psychic: #a259c6;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:'Nunito', sans-serif;
+    background: linear-gradient(180deg, #ffce4a, #ffb020 60%, #ff9500);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 24px 14px;
+    color: var(--cream);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .device{
+    position:relative;
+    width:100%;
+    max-width: 420px;
+    background: linear-gradient(160deg, var(--red), var(--red-deep));
+    border-radius: 28px;
+    padding: 18px 16px 22px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.35), inset 0 0 0 3px rgba(255,255,255,0.15);
+  }
+
+  .avatar{
+    position:absolute; top:14px; right:16px;
+    width:40px; height:40px; border-radius:50%;
+    background: rgba(0,0,0,0.25);
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.4), 0 2px 6px rgba(0,0,0,0.3);
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+  }
+  .avatar img{ width:100%; height:100%; object-fit:cover; }
+  .avatar svg{ width:24px; height:24px; }
+
+  .lights{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding: 4px 4px 16px;
+  }
+  .lens{
+    width:28px; height:28px; border-radius:50%;
+    background: radial-gradient(circle at 32% 28%, #cfeeff, #4fb2ea 45%, #1a5fa0 100%);
+    box-shadow: 0 0 0 4px rgba(255,255,255,0.5), 0 3px 6px rgba(0,0,0,0.3);
+  }
+  .dot{ width:10px; height:10px; border-radius:50%; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); }
+  .dot.g{ background:#3ec26a; }
+  .dot.y{ background:#f2c94c; }
+
+  .screen{
+    background: linear-gradient(180deg, var(--screen), var(--screen-deep));
+    border-radius: 16px;
+    padding: 20px 16px 22px;
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.5), inset 0 0 0 2px rgba(0,0,0,0.25);
+  }
+
+  header{ text-align:center; padding: 4px 4px 18px; user-select:none; }
+  .eyebrow{
+    letter-spacing:0.2em; text-transform:uppercase; font-size:11px;
+    color: rgba(246,236,217,0.6); margin-bottom:4px;
+  }
+  h1{
+    font-family:'Fredoka', sans-serif; font-weight:600;
+    font-size: clamp(22px, 6vw, 28px); margin:0; color:#fff;
+  }
+  .sub{ margin-top:8px; font-size:13px; color: rgba(246,236,217,0.55); }
+
+  .tasks{ display:flex; flex-direction:column; gap:12px; }
+  .tasks[hidden], .lock[hidden]{ display:none; }
+
+  .task{
+    position:relative;
+    display:flex; align-items:center; gap:14px;
+    width:100%;
+    background: rgba(246,236,217,0.06);
+    border: 1px solid rgba(246,236,217,0.14);
+    border-radius: 16px;
+    padding: 12px 14px;
+    cursor:pointer;
+    text-align:left;
+    color: var(--cream);
+    font-family:'Nunito', sans-serif;
+    transition: transform 0.15s ease, border-color 0.2s ease, background 0.2s ease;
+  }
+  .task:active{ transform: scale(0.98); }
+  .task:focus-visible{ outline: 2px solid #fff; outline-offset: 2px; }
+
+  .task .icon-wrap{
+    position:relative;
+    flex-shrink:0;
+    width:44px; height:44px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .task .icon-wrap::before{
+    content:"";
+    position:absolute; inset:-8px;
+    border-radius:50%;
+    background: radial-gradient(circle, var(--accent, transparent) 0%, transparent 72%);
+    opacity:0.55;
+  }
+  .task .icon-wrap svg{ position:relative; width:44px; height:44px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35)); }
+
+  .task .body{ flex:1; min-width:0; }
+  .task .name{
+    font-family:'Fredoka', sans-serif; font-weight:600; font-size:15px;
+    color:#fff; margin-bottom:3px;
+  }
+  .task .status{ font-size:12px; color: rgba(246,236,217,0.6); }
+
+  .task .charges{ display:flex; gap:4px; flex-shrink:0; }
+  .task .charge{
+    width:9px; height:9px; border-radius:50%;
+    background: rgba(246,236,217,0.25);
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.2);
+    transition: background 0.2s ease;
+  }
+
+  .task.playing{
+    border-color: rgba(255,255,255,0.55);
+    background: rgba(246,236,217,0.12);
+    animation: breathe 1.8s ease-in-out infinite;
+  }
+  @keyframes breathe{
+    0%,100%{ box-shadow: 0 0 0 0 rgba(255,255,255,0.0); }
+    50%{ box-shadow: 0 0 0 4px rgba(255,255,255,0.08); }
+  }
+  .task.playing .charge.active{ animation: pulse 1s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{ opacity:1; } 50%{ opacity:0.35; } }
+
+  .task.charge-1 .charge:nth-child(1){ background: var(--accent, #fff); }
+  .task.charge-2 .charge:nth-child(1),
+  .task.charge-2 .charge:nth-child(2){ background: var(--accent, #fff); }
+  .task[data-energy="fire"]{ --accent: var(--fire); }
+  .task[data-energy="water"]{ --accent: var(--water); }
+  .task[data-energy="electric"]{ --accent: var(--electric); }
+  .task[data-energy="grass"]{ --accent: var(--grass); }
+  .task[data-energy="psychic"]{ --accent: var(--psychic); }
+
+  .task.locked{
+    cursor:default;
+    filter: grayscale(0.7);
+    opacity:0.5;
+  }
+  .task.locked .status::after{ content:" · hotovo"; }
+
+  .task.missing .status::after{ content:" · nahrávka chybí"; }
+
+  .lock{
+    display:flex; flex-direction:column; align-items:center; gap:14px;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(246,236,217,0.16);
+    border-radius: 20px;
+    padding: 22px 16px 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  }
+  .lock-icon{ width:72px; height:72px; }
+  .lock-play{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    background: rgba(246,236,217,0.08);
+    border: 1px solid rgba(246,236,217,0.18);
+    border-radius: 999px;
+    padding: 10px 22px;
+    color:#fff;
+    font-family:'Fredoka', sans-serif; font-weight:600; font-size:13px;
+    letter-spacing: 0.05em;
+    cursor:pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+  .lock-play svg{ width:18px; height:18px; flex-shrink:0; }
+  .lock-play.playing{ border-color: rgba(255,255,255,0.5); background: rgba(246,236,217,0.14); }
+
+  .lock-form{ display:flex; gap:8px; width:100%; }
+  .lock-form input{
+    flex:1; min-width:0;
+    background: rgba(0,0,0,0.28);
+    border: 1px solid rgba(246,236,217,0.22);
+    border-radius: 12px;
+    padding: 12px 14px;
+    color:#fff;
+    font-family:'Nunito', sans-serif;
+    font-size:16px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .lock-form input::placeholder{ color: rgba(246,236,217,0.4); text-transform:none; letter-spacing:normal; }
+  .lock-form input:focus{ outline:2px solid rgba(255,255,255,0.4); outline-offset:1px; }
+  .lock-form button{
+    background: var(--fire);
+    border:none;
+    border-radius:12px;
+    padding: 0 18px;
+    color:#fff;
+    font-family:'Fredoka', sans-serif; font-weight:600; font-size:14px;
+    cursor:pointer;
+  }
+  .lock-error{
+    min-height:16px;
+    font-size:12px;
+    color:#ffb3a3;
+    text-align:center;
+  }
+  .lock-error.shake{ animation: shake 0.4s; }
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-6px); }
+    75%{ transform:translateX(6px); }
+  }
+
+  footer{
+    text-align:center; font-size:11px; color: rgba(246,236,217,0.35);
+    padding: 16px 6px 2px; user-select:none;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .task.playing, .task.playing .charge.active{ animation:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="device">
+  <!-- Drop a photo in and swap this for <img src="..." alt=""> to replace the placeholder silhouette. -->
+  <div class="avatar" id="avatar">
+    <svg viewBox="0 0 24 24" fill="#fff" opacity="0.85"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z"/></svg>
+  </div>
+  <div class="lights">
+    <div class="lens"></div>
+    <div class="dot g"></div>
+    <div class="dot y"></div>
+  </div>
+
+  <div class="screen">
+    <header id="resetZone">
+      <div class="eyebrow">Ashův deník</div>
+      <h1>POKÉDEX</h1>
+      <div class="sub" id="headerSub">Zamčeno</div>
+    </header>
+
+    <div class="lock" id="lockScreen">
+      <svg class="lock-icon" viewBox="0 0 48 48" fill="none">
+        <rect x="11" y="22" width="26" height="20" rx="4" fill="#fff" opacity="0.12" stroke="#fff" stroke-opacity="0.5" stroke-width="2"/>
+        <path d="M16 22v-6a8 8 0 0 1 16 0v6" stroke="#fff" stroke-opacity="0.6" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <circle cx="24" cy="30" r="3" fill="#fff" opacity="0.7"/>
+        <path d="M24 33v4" stroke="#fff" stroke-opacity="0.7" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+      <div class="lock-form">
+        <input type="text" id="passwordInput" placeholder="Zadej heslo" autocomplete="off" autocapitalize="characters">
+        <button id="unlockBtn">Odemknout</button>
+      </div>
+      <div class="lock-error" id="lockError"></div>
+      <button class="lock-play" id="introBtn">
+        <svg viewBox="0 0 24 24" fill="currentColor" id="introIcon"><path d="M8 5v14l11-7-11-7Z"/></svg>
+        <span>PLAY</span>
+      </button>
+    </div>
+
+    <div class="tasks" id="tasks" hidden></div>
+  </div>
+
+  <footer>Podrž nadpis 3s pro reset postupu</footer>
+</div>
+
+<audio id="audio" preload="none"></audio>
+
+<script>
+// ---- icon library (original illustrations, not licensed characters) ----
+// Exception: the "grass" leaf glyph is Google's Material Symbols "eco" icon
+// (Apache License 2.0, https://fonts.google.com/icons), used as-is, no attribution required.
+function badge(id, gradStops, highlight, iconPaths){
+  return `<svg viewBox="0 0 48 48" fill="none">
+    <defs><radialGradient id="${id}" cx="32%" cy="26%" r="80%">${gradStops}</radialGradient></defs>
+    <circle cx="24" cy="24" r="21" fill="url(#${id})"/>
+    <ellipse cx="17" cy="13" rx="8.5" ry="4.5" fill="#fff" opacity="${highlight}" transform="rotate(-30 17 13)"/>
+    ${iconPaths}
+    <circle cx="24" cy="24" r="20.3" fill="none" stroke="#000" stroke-opacity="0.22"/>
+  </svg>`;
+}
+
+const icons = {
+  fire: badge('g-fire',
+    '<stop offset="0%" stop-color="#ff9a6b"/><stop offset="50%" stop-color="#e0392f"/><stop offset="100%" stop-color="#7c1810"/>',
+    0.4,
+    '<path d="M14 18c2 3 4 5 4 8a4 4 0 1 1-8 0c0-2.5 2-5 4-8Z" fill="#000"/><path d="M35 19c2 3 4 5 4 8a4 4 0 1 1-8 0c0-2.5 2-5 4-8Z" fill="#000"/><path d="M24 9c4 5 8 10 7 16a7 7 0 1 1-14 0c0-2.5 1-4.5 2.3-6.2-.4 2.3.3 4.2 2 4.7a2.3 2.3 0 0 0 2.9-2.7C23.5 17 21 13.5 24 9Z" fill="#000"/>'),
+  water: badge('g-water',
+    '<stop offset="0%" stop-color="#a9d8fb"/><stop offset="50%" stop-color="#3b82c4"/><stop offset="100%" stop-color="#123a63"/>',
+    0.4,
+    '<path d="M24 11c5 6.5 9.5 12.4 9.5 17a9.5 9.5 0 0 1-19 0c0-4.6 4.5-10.5 9.5-17Z" fill="#000"/><ellipse cx="20" cy="28" rx="2.2" ry="3.2" fill="#a9d8fb" opacity="0.85" transform="rotate(-20 20 28)"/>'),
+  electric: badge('g-electric',
+    '<stop offset="0%" stop-color="#fff3b0"/><stop offset="50%" stop-color="#f2c94c"/><stop offset="100%" stop-color="#8a6008"/>',
+    0.45,
+    '<path d="M26 10 14 27h7l-2 12 13-19h-7l1-10Z" fill="#000"/>'),
+  grass: badge('g-grass',
+    '<stop offset="0%" stop-color="#a7e6bd"/><stop offset="50%" stop-color="#4caf6d"/><stop offset="100%" stop-color="#1c4a2b"/>',
+    0.4,
+    '<g transform="translate(6 6) scale(1.5)"><path d="M11.25 22q-.825 0-1.662-.187t-1.713-.538q.3-3.025 1.75-5.65T13.35 11q-2.75 1.4-4.762 3.7t-2.813 5.25q-.1-.075-.187-.162L5.4 19.6q-1.175-1.175-1.787-2.625T3 13.95q0-1.7.675-3.25T5.55 7.95q2.025-2.025 5.25-2.637t9.05-.113q.45 5.975-.15 9.113t-2.6 5.137q-1.225 1.225-2.738 1.888T11.25 22" fill="#000"/><path d="M8.5 19.5C9.5 15 12 11.5 16 9" stroke="#a7e6bd" stroke-opacity="0.85" stroke-width="1.1" fill="none" stroke-linecap="round"/></g>'),
+  psychic: badge('g-psychic',
+    '<stop offset="0%" stop-color="#dcb3f0"/><stop offset="50%" stop-color="#a259c6"/><stop offset="100%" stop-color="#4a1a63"/>',
+    0.4,
+    '<path d="M10 24c3.5-7 8.5-11 14-11s10.5 4 14 11c-3.5 7-8.5 11-14 11S13.5 31 10 24Z" fill="#000"/><path d="M27 18.5a7 7 0 0 1 0 11 5.5 5.5 0 1 1 0-11Z" fill="#dcb3f0" opacity="0.85"/>'),
+};
+
+// ---- task data ----
+// NOTE: "file" points to audio that doesn't exist yet — record your intro/task
+// clips later, drop them in /audio with these exact names, and it just works.
+// Each task can be played MAX_PLAYS times, then the button locks (dims + "hotovo").
+const MAX_PLAYS = 2;
+
+const tasks = [
+  { id:'hazeni',   name:'Házení pokéballem',      energy:'fire',     file:'audio/ukol1-hazeni.mp3' },
+  { id:'voda',     name:'Vodní poklad',           energy:'water',    file:'audio/ukol2-voda.mp3' },
+  { id:'elektrina',name:'Elektrická past',        energy:'electric', file:'audio/ukol3-elektrina.mp3' },
+  { id:'trava',    name:'Bylinkářská výprava',    energy:'grass',    file:'audio/ukol4-trava.mp3' },
+  { id:'psychika', name:'Šeptaná štafeta',        energy:'psychic',  file:'audio/ukol5-psychika.mp3' },
+];
+
+// ---- lock screen ----
+// Change PASSWORD to whatever the UV-revealed note says.
+const PASSWORD = 'PIKACHU';
+const INTRO_FILE = 'audio/intro.mp3';
+const UNLOCK_KEY = 'pokemonOslavaUnlocked';
+
+const lockScreen = document.getElementById('lockScreen');
+const headerSub = document.getElementById('headerSub');
+const introBtn = document.getElementById('introBtn');
+const introIcon = document.getElementById('introIcon');
+const passwordInput = document.getElementById('passwordInput');
+const unlockBtn = document.getElementById('unlockBtn');
+const lockError = document.getElementById('lockError');
+
+const ICON_PLAY_SVG = '<path d="M8 5v14l11-7-11-7Z"/>';
+const ICON_PAUSE_SVG = '<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>';
+let introPlaying = false;
+
+function isUnlocked(){ return localStorage.getItem(UNLOCK_KEY) === '1'; }
+
+function showUnlockedScreen(){
+  lockScreen.hidden = true;
+  tasksEl.hidden = false;
+  headerSub.textContent = 'Klepni na úkol a poslouchej';
+}
+function showLockedScreen(){
+  lockScreen.hidden = false;
+  tasksEl.hidden = true;
+  headerSub.textContent = 'Zamčeno';
+  passwordInput.value = '';
+  lockError.textContent = '';
+}
+
+introBtn.addEventListener('click', ()=>{
+  if(introPlaying){ return; }
+  audio.pause();
+  playingId = null;
+  audio.src = INTRO_FILE;
+  audio.currentTime = 0;
+  introPlaying = true;
+  introBtn.classList.add('playing');
+  introIcon.innerHTML = ICON_PAUSE_SVG;
+  audio.play().catch(()=>{
+    introPlaying = false;
+    introBtn.classList.remove('playing');
+    introIcon.innerHTML = ICON_PLAY_SVG;
+  });
+});
+
+function tryUnlock(){
+  const val = passwordInput.value.trim().toUpperCase();
+  if(!val) return;
+  if(val === PASSWORD.toUpperCase()){
+    localStorage.setItem(UNLOCK_KEY, '1');
+    showUnlockedScreen();
+  } else {
+    lockError.textContent = 'Špatné heslo, zkus to znovu';
+    lockError.classList.remove('shake');
+    void lockError.offsetWidth;
+    lockError.classList.add('shake');
+  }
+}
+unlockBtn.addEventListener('click', tryUnlock);
+passwordInput.addEventListener('keydown', e=>{ if(e.key === 'Enter') tryUnlock(); });
+
+// ---- persisted progress ----
+const STORAGE_KEY = 'pokemonOslavaProgress';
+function loadState(){
+  try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+  catch(e){ return {}; }
+}
+function saveState(state){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+let state = loadState();
+
+// ---- render ----
+const tasksEl = document.getElementById('tasks');
+const audio = document.getElementById('audio');
+let playingId = null;
+
+function chargesHtml(){
+  let html = '';
+  for(let i=0;i<MAX_PLAYS;i++) html += '<div class="charge"></div>';
+  return html;
+}
+
+function statusText(t, plays){
+  if(!t.file) return 'zatím bez nahrávky';
+  if(plays >= MAX_PLAYS) return 'poslechnuto';
+  const left = MAX_PLAYS - plays;
+  return left === MAX_PLAYS ? 'klepni pro přehrání' : `zbývá ${left}× přehrání`;
+}
+
+function render(){
+  tasksEl.innerHTML = '';
+  tasks.forEach(t=>{
+    const plays = state[t.id] || 0;
+    const locked = plays >= MAX_PLAYS;
+    const btn = document.createElement('button');
+    btn.className = 'task charge-' + Math.min(plays, MAX_PLAYS)
+      + (locked ? ' locked' : '')
+      + (!t.file ? ' missing' : '')
+      + (playingId === t.id ? ' playing' : '');
+    btn.dataset.energy = t.energy;
+    btn.id = 'task-' + t.id;
+    btn.innerHTML = `
+      <div class="icon-wrap">${icons[t.energy]}</div>
+      <div class="body">
+        <div class="name">${t.name}</div>
+        <div class="status">${statusText(t, plays)}</div>
+      </div>
+      <div class="charges">${chargesHtml()}</div>
+    `;
+    btn.addEventListener('click', ()=> handleTap(t));
+    tasksEl.appendChild(btn);
+  });
+}
+
+function handleTap(t){
+  const plays = state[t.id] || 0;
+  if(plays >= MAX_PLAYS) return; // locked, ignore
+  if(playingId === t.id) return; // already playing this one, ignore extra taps
+
+  audio.pause();
+  playingId = t.id;
+  render();
+
+  if(!t.file){
+    // no recording yet — still consumes nothing, just gives feedback
+    playingId = null;
+    render();
+    return;
+  }
+
+  audio.src = t.file;
+  audio.currentTime = 0;
+  audio.play().then(()=>{
+    state[t.id] = plays + 1;
+    saveState(state);
+  }).catch(()=>{
+    playingId = null;
+    render();
+  });
+}
+
+audio.addEventListener('ended', ()=>{
+  if(introPlaying){
+    introPlaying = false;
+    introBtn.classList.remove('playing');
+    introIcon.innerHTML = ICON_PLAY_SVG;
+    return;
+  }
+  playingId = null;
+  render();
+});
+audio.addEventListener('error', ()=>{
+  if(introPlaying){
+    introPlaying = false;
+    introBtn.classList.remove('playing');
+    introIcon.innerHTML = ICON_PLAY_SVG;
+    return;
+  }
+  if(playingId){ playingId = null; render(); }
+});
+
+render();
+isUnlocked() ? showUnlockedScreen() : showLockedScreen();
+
+// ---- hidden reset: hold the header 3s ----
+const resetZone = document.getElementById('resetZone');
+let holdTimer = null;
+function startHold(){
+  holdTimer = setTimeout(()=>{
+    state = {};
+    saveState(state);
+    localStorage.removeItem(UNLOCK_KEY);
+    audio.pause();
+    playingId = null;
+    introPlaying = false;
+    render();
+    showLockedScreen();
+  }, 3000);
+}
+function cancelHold(){ clearTimeout(holdTimer); }
+resetZone.addEventListener('pointerdown', startHold);
+resetZone.addEventListener('pointerup', cancelHold);
+resetZone.addEventListener('pointerleave', cancelHold);
+</script>
+
+</body>
+</html>
