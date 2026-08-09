@@ -28,7 +28,7 @@
     margin:0;
     min-height:100vh;
     font-family:'Nunito', sans-serif;
-    background: linear-gradient(180deg, #ffce4a, #ffb020 60%, #ff9500);
+    background: linear-gradient(180deg, var(--red), var(--red-deep) 70%, #7c1808);
     display:flex;
     align-items:center;
     justify-content:center;
@@ -179,7 +179,7 @@
     padding: 22px 16px 20px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.35);
   }
-  .lock-icon{ width:72px; height:72px; }
+  .lock-icon{ width:110px; height:110px; }
   .lock-play{
     display:flex; align-items:center; justify-content:center; gap:8px;
     background: rgba(246,236,217,0.08);
@@ -270,7 +270,7 @@
         <path d="M24 33v4" stroke="#fff" stroke-opacity="0.7" stroke-width="2.5" stroke-linecap="round"/>
       </svg>
       <div class="lock-form">
-        <input type="text" id="passwordInput" placeholder="Zadej heslo" autocomplete="off" autocapitalize="characters">
+        <input type="text" id="passwordInput" placeholder="Zadej heslo" autocomplete="off" inputmode="numeric" pattern="[0-9]*">
         <button id="unlockBtn">Odemknout</button>
       </div>
       <div class="lock-error" id="lockError"></div>
@@ -341,7 +341,7 @@ const tasks = [
 
 // ---- lock screen ----
 // Change PASSWORD to whatever the UV-revealed note says.
-const PASSWORD = 'PIKACHU';
+const PASSWORD = '5891';
 const INTRO_FILE = 'audio/intro.mp3';
 const UNLOCK_KEY = 'pokemonOslavaUnlocked';
 
