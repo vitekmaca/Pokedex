@@ -56,13 +56,18 @@
   }
 
   .avatar{
-    position:absolute; top:14px; right:16px;
+    position:absolute; top:14px; right:16px; z-index:2;
     width:40px; height:40px; border-radius:50%;
     background: rgba(0,0,0,0.25);
+    border:none;
     box-shadow: 0 0 0 2px rgba(255,255,255,0.4), 0 2px 6px rgba(0,0,0,0.3);
     display:flex; align-items:center; justify-content:center;
     overflow:hidden;
+    padding:0;
+    cursor:pointer;
+    -webkit-tap-highlight-color: transparent;
   }
+  .avatar:active{ transform: scale(0.92); }
   .avatar img{ width:100%; height:100%; object-fit:cover; }
   .avatar svg{ width:24px; height:24px; }
 
@@ -82,12 +87,61 @@
   .dot.y{ background:#f2c94c; }
 
   .screen{
+    position:relative;
     flex:1;
     background: linear-gradient(180deg, var(--screen), var(--screen-deep));
     border-radius: 16px;
     padding: 20px 16px 22px;
     box-shadow: inset 0 2px 10px rgba(0,0,0,0.5), inset 0 0 0 2px rgba(0,0,0,0.25);
   }
+
+  .unlock-anim{
+    position:absolute; inset:0; z-index:20;
+    display:flex; align-items:center; justify-content:center;
+    background: rgba(10,14,28,0.94);
+    border-radius: 16px;
+    transition: opacity 0.4s ease;
+  }
+  .unlock-anim[hidden]{ display:none; }
+  .unlock-anim .ball{
+    position:relative; width:90px; height:90px;
+    opacity:0; transform: scale(0.2) translateY(-160px) rotate(-30deg);
+  }
+  .unlock-anim.fly .ball{ animation: ballFly 0.5s cubic-bezier(.34,1.56,.64,1) forwards; }
+  @keyframes ballFly{
+    0%{ opacity:0; transform: scale(0.2) translateY(-160px) rotate(-30deg); }
+    70%{ opacity:1; transform: scale(1.1) translateY(6px) rotate(10deg); }
+    100%{ opacity:1; transform: scale(1) translateY(0) rotate(0); }
+  }
+  .unlock-anim.wobble .ball{ animation: ballWobble 0.5s ease-in-out; }
+  @keyframes ballWobble{
+    0%,100%{ transform: rotate(0); }
+    20%{ transform: rotate(-14deg); }
+    40%{ transform: rotate(12deg); }
+    60%{ transform: rotate(-9deg); }
+    80%{ transform: rotate(6deg); }
+  }
+  .unlock-anim .ball-top, .unlock-anim .ball-bottom{
+    transition: transform 0.5s ease, opacity 0.5s ease;
+    transform-origin: 50px 50px;
+  }
+  .unlock-anim .ball-band, .unlock-anim .ball-button{ transition: opacity 0.3s ease; }
+  .unlock-anim.open .ball-top{ transform: translateY(-46px) rotate(-40deg); opacity:0; }
+  .unlock-anim.open .ball-bottom{ transform: translateY(46px) rotate(40deg); opacity:0; }
+  .unlock-anim.open .ball-band, .unlock-anim.open .ball-button{ opacity:0; }
+  .unlock-anim .flash{
+    position:absolute; top:50%; left:50%; width:20px; height:20px; margin:-10px 0 0 -10px;
+    border-radius:50%;
+    background: radial-gradient(circle, #fff 0%, rgba(255,255,255,0.7) 40%, rgba(255,255,255,0) 72%);
+    opacity:0; transform:scale(0.2);
+  }
+  .unlock-anim.open .flash{ animation: flashBurst 0.7s ease-out forwards; }
+  @keyframes flashBurst{
+    0%{ opacity:0; transform:scale(0.2); }
+    35%{ opacity:1; transform:scale(3.2); }
+    100%{ opacity:0; transform:scale(6); }
+  }
+  .unlock-anim.fadeout{ opacity:0; }
 
   header{ text-align:center; padding: 4px 4px 18px; user-select:none; }
   .eyebrow{
@@ -234,11 +288,15 @@
     color:#ffb3a3;
     text-align:center;
   }
-  .lock-error.shake{ animation: shake 0.4s; }
+  .device.shake{ animation: shake 0.45s; }
   @keyframes shake{
-    0%,100%{ transform:translateX(0); }
-    25%{ transform:translateX(-6px); }
-    75%{ transform:translateX(6px); }
+    0%,100%{ transform:translateX(0) rotate(0); }
+    15%{ transform:translateX(-10px) rotate(-1.5deg); }
+    30%{ transform:translateX(9px) rotate(1.5deg); }
+    45%{ transform:translateX(-7px) rotate(-1deg); }
+    60%{ transform:translateX(6px) rotate(1deg); }
+    75%{ transform:translateX(-4px) rotate(-0.5deg); }
+    90%{ transform:translateX(3px) rotate(0.5deg); }
   }
 
   footer{
@@ -255,10 +313,14 @@
 <body>
 
 <div class="device">
-  <!-- Drop a photo in and swap this for <img src="..." alt=""> to replace the placeholder silhouette. -->
-  <div class="avatar" id="avatar">
-    <svg viewBox="0 0 24 24" fill="#fff" opacity="0.85"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z"/></svg>
-  </div>
+  <!-- Tap resets the whole site back to the lock screen. Drop a photo in and swap the svg for <img src="..." alt="">. -->
+  <button class="avatar" id="avatar" aria-label="Resetovat">
+    <svg viewBox="0 0 24 24" fill="none">
+      <path d="M4 13c0-4.4 3.6-8 8-8s8 3.6 8 8H4Z" fill="#e3350d"/>
+      <ellipse cx="12" cy="13" rx="9.5" ry="2.2" fill="#fff"/>
+      <circle cx="9" cy="9.5" r="1.6" fill="#fff"/>
+    </svg>
+  </button>
   <div class="lights">
     <div class="lens"></div>
     <div class="dot g"></div>
@@ -291,6 +353,17 @@
     </div>
 
     <div class="tasks" id="tasks" hidden></div>
+
+    <div class="unlock-anim" id="unlockAnim" hidden>
+      <div class="flash"></div>
+      <svg class="ball" viewBox="0 0 100 100">
+        <path class="ball-top" d="M6 50a44 44 0 0 1 88 0Z" fill="#e3350d"/>
+        <path class="ball-bottom" d="M6 50a44 44 0 0 0 88 0Z" fill="#f6ecd9"/>
+        <rect class="ball-band" x="4" y="46" width="92" height="8" fill="#16131a"/>
+        <circle class="ball-button" cx="50" cy="50" r="12" fill="#f6ecd9" stroke="#16131a" stroke-width="4"/>
+        <circle class="ball-button" cx="50" cy="50" r="5" fill="#f6ecd9" stroke="#16131a" stroke-width="2"/>
+      </svg>
+    </div>
   </div>
 
   <footer>Podrž nápis „POKÉDEX" 3 vteřiny pro reset</footer>
@@ -398,17 +471,33 @@ introBtn.addEventListener('click', ()=>{
   });
 });
 
+const deviceEl = document.querySelector('.device');
+const unlockAnim = document.getElementById('unlockAnim');
+
+function playUnlockAnimation(done){
+  unlockAnim.hidden = false;
+  unlockAnim.className = 'unlock-anim fly';
+  setTimeout(()=>{ unlockAnim.className = 'unlock-anim wobble'; }, 500);
+  setTimeout(()=>{ unlockAnim.className = 'unlock-anim open'; }, 1000);
+  setTimeout(()=>{ unlockAnim.classList.add('fadeout'); done(); }, 1650);
+  setTimeout(()=>{ unlockAnim.hidden = true; unlockAnim.className = 'unlock-anim'; }, 2050);
+}
+
 function tryUnlock(){
   const val = passwordInput.value.trim().toUpperCase();
   if(!val) return;
   if(val === PASSWORD.toUpperCase()){
-    localStorage.setItem(UNLOCK_KEY, '1');
-    showUnlockedScreen();
+    lockError.textContent = '';
+    playUnlockAnimation(()=>{
+      localStorage.setItem(UNLOCK_KEY, '1');
+      showUnlockedScreen();
+    });
   } else {
     lockError.textContent = 'Špatné heslo, zkus to znovu';
-    lockError.classList.remove('shake');
-    void lockError.offsetWidth;
-    lockError.classList.add('shake');
+    if(navigator.vibrate) navigator.vibrate([80, 40, 80, 40, 120]);
+    deviceEl.classList.remove('shake');
+    void deviceEl.offsetWidth;
+    deviceEl.classList.add('shake');
   }
 }
 unlockBtn.addEventListener('click', tryUnlock);
@@ -518,25 +607,30 @@ audio.addEventListener('error', ()=>{
 render();
 isUnlocked() ? showUnlockedScreen() : showLockedScreen();
 
-// ---- hidden reset: hold the header 3s ----
+// ---- reset: hold the header 3s, or tap the avatar ----
+function resetEverything(){
+  state = {};
+  saveState(state);
+  localStorage.removeItem(UNLOCK_KEY);
+  audio.pause();
+  playingId = null;
+  introPlaying = false;
+  render();
+  showLockedScreen();
+}
+
 const resetZone = document.getElementById('resetZone');
 let holdTimer = null;
 function startHold(){
-  holdTimer = setTimeout(()=>{
-    state = {};
-    saveState(state);
-    localStorage.removeItem(UNLOCK_KEY);
-    audio.pause();
-    playingId = null;
-    introPlaying = false;
-    render();
-    showLockedScreen();
-  }, 3000);
+  holdTimer = setTimeout(resetEverything, 3000);
 }
 function cancelHold(){ clearTimeout(holdTimer); }
 resetZone.addEventListener('pointerdown', startHold);
 resetZone.addEventListener('pointerup', cancelHold);
 resetZone.addEventListener('pointerleave', cancelHold);
+
+const avatarBtn = document.getElementById('avatar');
+avatarBtn.addEventListener('click', resetEverything);
 </script>
 
 </body>
