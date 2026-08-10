@@ -141,7 +141,7 @@
     background: radial-gradient(circle, #fff 0%, rgba(255,255,255,0.8) 40%, rgba(255,255,255,0) 72%);
     opacity:0; transform:scale(0.2);
   }
-  .unlock-anim.open .flash{ animation: flashBurst 0.9s ease-out forwards; }
+  .unlock-anim.open .flash{ animation: flashBurst 0.9s ease-out 0.2s forwards; }
   @keyframes flashBurst{
     0%{ opacity:0; transform:scale(0.2); }
     30%{ opacity:1; transform:scale(4); }
@@ -357,6 +357,11 @@
         <svg viewBox="0 0 24 24" fill="currentColor" id="introIcon"><path d="M8 5v14l11-7-11-7Z"/></svg>
         <span>PLAY</span>
       </button>
+
+      <button class="hint-btn" id="hintBtn" aria-label="Nápověda">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.9v.2h5v-.2c0-.8.4-1.5 1-1.9A6 6 0 0 0 12 3Z" stroke="#fff" stroke-opacity="0.55" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="hint-reveal" id="hintReveal" hidden></div>
     </div>
 
     <div class="tasks" id="tasks" hidden></div>
@@ -487,9 +492,9 @@ function playUnlockAnimation(done){
   setTimeout(()=>{ unlockAnim.className = 'unlock-anim wobble'; }, 550);
   setTimeout(()=>{ unlockAnim.className = 'unlock-anim idle'; }, 1150);
   setTimeout(()=>{ unlockAnim.className = 'unlock-anim open'; }, 2350);
-  setTimeout(()=>{ done(); }, 2900);
-  setTimeout(()=>{ unlockAnim.classList.add('fadeout'); }, 3000);
-  setTimeout(()=>{ unlockAnim.hidden = true; unlockAnim.className = 'unlock-anim'; }, 3400);
+  setTimeout(()=>{ done(); }, 3150);
+  setTimeout(()=>{ unlockAnim.classList.add('fadeout'); }, 3350);
+  setTimeout(()=>{ unlockAnim.hidden = true; unlockAnim.className = 'unlock-anim'; }, 3750);
 }
 
 function tryUnlock(){
