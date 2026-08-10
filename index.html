@@ -516,13 +516,10 @@ const unlockAnim = document.getElementById('unlockAnim');
 
 function playUnlockAnimation(done){
   unlockAnim.hidden = false;
-  unlockAnim.className = 'unlock-anim fly';
-  setTimeout(()=>{ unlockAnim.className = 'unlock-anim wobble'; }, 550);
-  setTimeout(()=>{ unlockAnim.className = 'unlock-anim idle'; }, 1150);
-  setTimeout(()=>{ unlockAnim.className = 'unlock-anim open'; }, 2350);
-  setTimeout(()=>{ done(); }, 3150);
-  setTimeout(()=>{ unlockAnim.classList.add('fadeout'); }, 3350);
-  setTimeout(()=>{ unlockAnim.hidden = true; unlockAnim.className = 'unlock-anim'; }, 3750);
+  setTimeout(()=>{
+    unlockAnim.hidden = true;
+    done();
+  }, 1000);
 }
 
 function tryUnlock(){
