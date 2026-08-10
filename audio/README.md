@@ -2,7 +2,7 @@
 
 Sem patří 6 zvukových souborů — úvodní zpráva na zamykací obrazovce a jedna pro každý úkol. Přesně tyto názvy:
 
-- `intro.mp3` — zamčená obrazovka, robotický hlas Pokédexu ("Systém uzamčen...")
+- `intro.m4a` — zamčená obrazovka, robotický hlas Pokédexu (švýcarská němčina, "Hoi mitenand...") — hotovo ✓
 - `ukol1-hazeni.mp3` — Ash, Fire
 - `ukol2-voda.mp3` — Ash, Water
 - `ukol3-elektrina.mp3` — Ash, Electric
