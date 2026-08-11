@@ -103,51 +103,7 @@
     transition: opacity 0.4s ease;
   }
   .unlock-anim[hidden]{ display:none; }
-  .unlock-anim .ball{
-    position:relative; width:90px; height:90px;
-    opacity:0; transform: scale(0.2) translateY(-160px) rotate(-30deg);
-  }
-  .unlock-anim.fly .ball{ animation: ballFly 0.5s cubic-bezier(.34,1.56,.64,1) forwards; }
-  @keyframes ballFly{
-    0%{ opacity:0; transform: scale(0.2) translateY(-160px) rotate(-30deg); }
-    70%{ opacity:1; transform: scale(1.1) translateY(6px) rotate(10deg); }
-    100%{ opacity:1; transform: scale(1) translateY(0) rotate(0); }
-  }
-  .unlock-anim.wobble .ball{ animation: ballWobble 0.6s ease-in-out; }
-  @keyframes ballWobble{
-    0%,100%{ transform: rotate(0); }
-    20%{ transform: rotate(-14deg); }
-    40%{ transform: rotate(12deg); }
-    60%{ transform: rotate(-9deg); }
-    80%{ transform: rotate(6deg); }
-  }
-  .unlock-anim.idle .ball{ animation: ballIdle 0.9s ease-in-out infinite; }
-  @keyframes ballIdle{
-    0%,100%{ transform: scale(1) rotate(0); }
-    50%{ transform: scale(1.07) rotate(-3deg); }
-  }
-  .unlock-anim .ball-top, .unlock-anim .ball-bottom{
-    transition: transform 0.7s cubic-bezier(.4,0,.2,1), opacity 0.7s ease;
-    transform-origin: 50px 50px;
-  }
-  .unlock-anim .ball-band, .unlock-anim .ball-button{ transition: opacity 0.35s ease; }
-  .unlock-anim.open .ball{ animation: none; }
-  .unlock-anim.open .ball-top{ transform: translateY(-70px) scale(1.3) rotate(-55deg); opacity:0; }
-  .unlock-anim.open .ball-bottom{ transform: translateY(70px) scale(1.3) rotate(55deg); opacity:0; }
-  .unlock-anim.open .ball-band, .unlock-anim.open .ball-button{ opacity:0; }
-  .unlock-anim .flash{
-    position:absolute; top:50%; left:50%; width:20px; height:20px; margin:-10px 0 0 -10px;
-    border-radius:50%;
-    background: radial-gradient(circle, #fff 0%, rgba(255,255,255,0.8) 40%, rgba(255,255,255,0) 72%);
-    opacity:0; transform:scale(0.2);
-  }
-  .unlock-anim.open .flash{ animation: flashBurst 0.9s ease-out 0.2s forwards; }
-  @keyframes flashBurst{
-    0%{ opacity:0; transform:scale(0.2); }
-    30%{ opacity:1; transform:scale(4); }
-    100%{ opacity:0; transform:scale(8); }
-  }
-  .unlock-anim.fadeout{ opacity:0; }
+  .unlock-anim img{ max-width:100%; max-height:100%; border-radius:12px; }
 
   header{ text-align:center; padding: 4px 4px 18px; user-select:none; }
   .eyebrow{
@@ -314,7 +270,7 @@
   }
   .hint-reveal[hidden]{ display:none; }
   .hint-reveal.show{ opacity:1; }
-  .hint-reveal svg{ width:110px; height:110px; }
+  .hint-reveal img{ max-width:100%; max-height:100%; border-radius:12px; }
   .device.shake{ animation: shake 0.45s; }
   @keyframes shake{
     0%,100%{ transform:translateX(0) rotate(0); }
@@ -485,6 +441,7 @@ introBtn.addEventListener('click', ()=>{
   if(introPlaying){ return; }
   audio.pause();
   playingId = null;
+  render();
   audio.src = INTRO_FILE;
   audio.currentTime = 0;
   introPlaying = true;
@@ -602,6 +559,11 @@ function handleTap(t){
   if(playingId === t.id) return; // already playing this one, ignore extra taps
 
   audio.pause();
+  if(introPlaying){
+    introPlaying = false;
+    introBtn.classList.remove('playing');
+    introIcon.innerHTML = ICON_PLAY_SVG;
+  }
   playingId = t.id;
   render();
 
